@@ -18,6 +18,10 @@ interface IERC20v1 {
     
     // function productStatusOf(address buyer) external view returns (bytes32);
     // function productStatusOf(address buyer) external view returns (string memory);
+    
+    // function newOrders(uint256 orderId, address buyer ,string memory trackingNumber, string memory parcelStatus ) external returns (bool) ;
+    
+    
 
     /**
      * @dev Moves `amount` tokens from the caller's account to `recipient`.
@@ -81,4 +85,7 @@ interface IERC20v1 {
      * a call to {approve}. `value` is the new allowance.
      */
     event Approval(address indexed owner, address indexed spender, uint256 value);
+    
+    event UpdateOrderStatus(uint256 indexed _orderId, address indexed _buyer, string _parcelStatus );
+    
 }

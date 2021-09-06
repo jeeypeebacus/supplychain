@@ -12,8 +12,18 @@ contract SupplyChain is IERC20v1 {
     
     struct OrderStatus { 
         string trackingNumber;
-        string parcelStatus;
+        // string parcelStatus;
+        State status;
     }
+    
+    enum State { 
+        ToPack,
+        Shipped,
+        Delivered
+    }
+        
+    
+    
     
     struct UserOrder { 
         uint256 orderId;
@@ -21,14 +31,36 @@ contract SupplyChain is IERC20v1 {
     
     uint256 [] private userOrders;
     
+    State private state;
+    
      mapping (address => UserOrder[] ) private userOrder;
      mapping(address => mapping( uint256 => OrderStatus)) private orders;
      mapping(address=>uint256) private _balances;
      mapping(address => mapping(address => uint256)) private _allowances;
+     
+    
+    // function test () public pure returns (State) {
+        
+        
+    //     return State.Delivered;
+    // }
+    
     
     // Add new Order
     function newOrders(uint256 orderId, address buyer ,string memory trackingNumber, string memory parcelStatus ) public returns (bool) {
-        orders[buyer][orderId] = OrderStatus(trackingNumber, parcelStatus);
+        
+        require(buyer != address(0), 'Invalid Buyer Address.');
+        
+        State tmpStatus;
+         
+        if( keccak256(bytes(parcelStatus)) == keccak256(bytes('To Pack')) ) {
+            tmpStatus = State.ToPack;
+        }else{
+            revert("Invalid state value.");
+        }
+        
+        
+        orders[buyer][orderId] = OrderStatus(trackingNumber, tmpStatus);
         userOrder[buyer].push(UserOrder(orderId));
        
         return true;
@@ -36,16 +68,37 @@ contract SupplyChain is IERC20v1 {
     
     //update order status
     function updateOrderStatus(uint256 _orderId, address _buyer,string memory _parcelStatus ) public returns (bool) {
-        orders[_buyer][_orderId].parcelStatus = _parcelStatus;
+        
+        require(_buyer != address(0), 'Invalid Buyer Address.' );
+        
+        State tmpStatus;
+        
+        if( keccak256(bytes(_parcelStatus)) == keccak256(bytes('To Pack')) ) {
+            tmpStatus = State.ToPack;
+        }else if( keccak256(bytes(_parcelStatus)) == keccak256(bytes('Shipped')) ) {
+            tmpStatus = State.Shipped;
+        }else if( keccak256(bytes(_parcelStatus)) == keccak256(bytes('Delivered')) ) {
+            tmpStatus = State.Delivered;
+        }else{
+            revert("Invalid state value.");
+        }
+        
+        orders[_buyer][_orderId].status = tmpStatus;
+        
+        emit UpdateOrderStatus(_orderId, _buyer, _parcelStatus);
+        
         return true;
     }
     
     
     //get the status of a specific order
-    function orderStatusOf(address _buyer, uint256 _orderId) public view returns ( string memory, string memory ){
+    function orderStatusOf(address _buyer, uint256 _orderId) public view returns ( string memory, State ){
+        
+        require(_buyer != address(0), 'Invalid Buyer Address.' );
+        
         return ( 
             orders[_buyer][_orderId].trackingNumber, 
-            orders[_buyer][_orderId].parcelStatus 
+            orders[_buyer][_orderId].status 
         );
     }
     
