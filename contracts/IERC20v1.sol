@@ -86,6 +86,11 @@ interface IERC20v1 {
      */
     event Approval(address indexed owner, address indexed spender, uint256 value);
     
-    event UpdateOrderStatus(uint256 indexed _orderId, address indexed _buyer, string _parcelStatus );
+    
+    // Emit when the Order Status is modified.
+    event UpdateOrderStatus(uint256 indexed _orderId, address indexed _buyer, string _parcelStatus, uint256 transactionDate );
+    
+    // Emit when there is a new order placed.
+    event NewOrders(uint256 indexed orderId, address indexed buyer ,string trackingNumber, string parcelStatus );
     
 }
